@@ -1,0 +1,46 @@
+{
+  "name": "@blindgate/sdk",
+  "version": "0.0.1",
+  "description": "Blindgate authentication SDK",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir dist --target browser --minify --sourcemap=linked",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "package.json"
+  ],
+  "keywords": [
+    "blindgate",
+    "auth",
+    "authentication",
+    "passkey",
+    "webauthn",
+    "sdk"
+  ],
+  "author": "Blindgate",
+  "license": "MIT",
+  "dependencies": {
+    "@blindgate/api": "workspace:*"
+  },
+  "devDependencies": {
+    "@blindgate/typescript-config": "workspace:*",
+    "bun-types": "catalog:",
+    "typescript": "catalog:"
+  }
+}
