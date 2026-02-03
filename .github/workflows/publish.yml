@@ -57,7 +57,7 @@ jobs:
 
       - name: Set version
         working-directory: packages/${{ env.PACKAGE }}
-        run: npm version "$VERSION" --no-git-tag-version --allow-same-version
+        run: jq --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
 
       - name: Publish
         working-directory: packages/${{ env.PACKAGE }}
