@@ -33,6 +33,11 @@
     "webauthn",
     "sdk"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blindgate-dev/sdk",
+    "directory": "packages/sdk"
+  },
   "author": "Blindgate",
   "license": "MIT",
   "dependencies": {
