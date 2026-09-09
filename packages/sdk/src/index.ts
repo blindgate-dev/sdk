@@ -3,14 +3,16 @@ export {
   BlindgateError,
   type BlindgateConfig,
   type StorageProvider,
-  type PasskeyOptions,
-  type PasskeyCredential,
 } from './types'
 export type {
   AuthUser,
-  SignInResponse,
-  SignUpResponse,
-  SignInSuccessResponse,
   AuthSignInBody,
   AuthSignUpBody,
+  ListPasskeysResponse,
+  Passkey,
+  PasskeyRegistrationResponse,
+  SignInMfaRequiredResponse,
+  SignInResponse,
+  SignInSuccessResponse,
+  SignUpResponse,
 } from '@blindgate/api'

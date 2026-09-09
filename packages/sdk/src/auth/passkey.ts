@@ -1,111 +1,85 @@
-import { httpClient, type SignInSuccessResponse, type SignUpResponse } from '@blindgate/api'
-import type { PasskeyCredential } from '../types'
-import { isBrowser, base64UrlEncode, base64UrlDecode } from '../utils'
+import {
+  deletePasskey,
+  listPasskeys,
+  passkeyLoginChallenge,
+  passkeyLoginVerify,
+  passkeyRegisterChallenge,
+  passkeyRegisterVerify,
+  type ListPasskeysResponse,
+  type PasskeyRegisterBody,
+  type PasskeyRegistrationResponse,
+  type PasskeyVerifyBody,
+  type SignInResponse,
+} from '@blindgate/api'
+import { BlindgateError } from '../types'
+import { isBrowser } from '../utils'
+
+type CredentialWithJson = PublicKeyCredential & { toJSON(): unknown }
+
+function assertWebAuthnSupport(): void {
+  if (!isBrowser() || typeof PublicKeyCredential === 'undefined') {
+    throw new BlindgateError(
+      'Passkeys are only available in browsers with WebAuthn support',
+      'WEBAUTHN_UNSUPPORTED',
+    )
+  }
+  if (
+    typeof PublicKeyCredential.parseRequestOptionsFromJSON !== 'function' ||
+    typeof PublicKeyCredential.parseCreationOptionsFromJSON !== 'function'
+  ) {
+    throw new BlindgateError(
+      'This browser does not support the WebAuthn JSON API',
+      'WEBAUTHN_UNSUPPORTED',
+    )
+  }
+}
+
+function toJson<T>(credential: Credential | null): T {
+  if (!credential || typeof (credential as CredentialWithJson).toJSON !== 'function') {
+    throw new BlindgateError(
+      'No passkey credential was returned by the browser',
+      'WEBAUTHN_CANCELLED',
+    )
+  }
+  return (credential as CredentialWithJson).toJSON() as T
+}
 
 export class PasskeyAuth {
-  async signIn(): Promise<SignInSuccessResponse> {
-    if (!isBrowser()) {
-      throw new Error('Passkey authentication is only available in browser environments')
-    }
+  /** Sign in with a passkey registered for the given email. */
+  async signIn(email: string): Promise<SignInResponse> {
+    assertWebAuthnSupport()
 
-    const options = await httpClient<{
-      challenge: string
-      rpId: string
-      allowCredentials?: Array<{ id: string; type: string }>
-    }>('/api/v1/auth/sign-in/passkey/options', {
-      method: 'POST',
+    const { challenge } = await passkeyLoginChallenge({ email })
+    const credential = await navigator.credentials.get({
+      publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(
+        challenge as unknown as PublicKeyCredentialRequestOptionsJSON,
+      ),
     })
 
-    const credential = (await navigator.credentials.get({
-      publicKey: {
-        challenge: base64UrlDecode(options.challenge),
-        rpId: options.rpId,
-        allowCredentials: options.allowCredentials?.map((cred) => ({
-          id: base64UrlDecode(cred.id),
-          type: cred.type as PublicKeyCredentialType,
-        })),
-        userVerification: 'preferred',
-      },
-    })) as unknown as PasskeyCredential
+    return passkeyLoginVerify({ credential: toJson<PasskeyVerifyBody['credential']>(credential) })
+  }
 
-    if (!credential) {
-      throw new Error('No credential selected')
-    }
+  /** Register a new passkey for the currently signed-in user. */
+  async register(): Promise<PasskeyRegistrationResponse> {
+    assertWebAuthnSupport()
 
-    return httpClient<SignInSuccessResponse>('/api/v1/auth/sign-in/passkey/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: credential.id,
-        rawId: base64UrlEncode(base64UrlDecode(credential.rawId)),
-        response: {
-          clientDataJSON: credential.response.clientDataJSON,
-          authenticatorData: credential.response.authenticatorData,
-          signature: credential.response.signature,
-          userHandle: credential.response.userHandle,
-        },
-        type: credential.type,
-      }),
+    const { challenge } = await passkeyRegisterChallenge()
+    const credential = await navigator.credentials.create({
+      publicKey: PublicKeyCredential.parseCreationOptionsFromJSON(
+        challenge as unknown as PublicKeyCredentialCreationOptionsJSON,
+      ),
+    })
+
+    return passkeyRegisterVerify({
+      credential: toJson<PasskeyRegisterBody['credential']>(credential),
     })
   }
 
-  async signUp(name?: string): Promise<SignUpResponse> {
-    if (!isBrowser()) {
-      throw new Error('Passkey registration is only available in browser environments')
-    }
+  async list(): Promise<ListPasskeysResponse> {
+    return listPasskeys()
+  }
 
-    const options = await httpClient<{
-      challenge: string
-      rp: { id: string; name: string }
-      user: { id: string; name: string; displayName: string }
-      pubKeyCredParams: PublicKeyCredentialParameters[]
-    }>('/api/v1/auth/sign-up/passkey/options', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
-    })
-
-    const credential = (await navigator.credentials.create({
-      publicKey: {
-        challenge: base64UrlDecode(options.challenge),
-        rp: options.rp,
-        user: {
-          id: base64UrlDecode(options.user.id),
-          name: options.user.name,
-          displayName: options.user.displayName,
-        },
-        pubKeyCredParams: options.pubKeyCredParams,
-        authenticatorSelection: {
-          residentKey: 'preferred',
-          userVerification: 'preferred',
-        },
-        attestation: 'none',
-      },
-    })) as unknown as PasskeyCredential & {
-      response: {
-        attestationObject?: string
-      }
-    }
-
-    if (!credential) {
-      throw new Error('Credential creation failed')
-    }
-
-    return httpClient<SignUpResponse>('/api/v1/auth/sign-up/passkey/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: credential.id,
-        rawId: base64UrlEncode(base64UrlDecode(credential.rawId)),
-        response: {
-          clientDataJSON: credential.response.clientDataJSON,
-          authenticatorData: credential.response.authenticatorData,
-          signature: credential.response.signature,
-          attestationObject: credential.response.attestationObject,
-          userHandle: credential.response.userHandle,
-        },
-        type: credential.type,
-      }),
-    })
+  async delete(id: string): Promise<void> {
+    await deletePasskey(id)
   }
 }

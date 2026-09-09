@@ -1,21 +1,18 @@
 import {
-  postApiV1AuthSignIn,
-  postApiV1AuthSignUp,
+  signIn,
+  signUp,
+  type AuthSignInBody,
+  type AuthSignUpBody,
   type SignInResponse,
   type SignUpResponse,
 } from '@blindgate/api'
 
 export class EmailAuth {
-  async signIn(credentials: { identifier: string; password: string }): Promise<SignInResponse> {
-    return postApiV1AuthSignIn(credentials)
+  async signIn(credentials: AuthSignInBody): Promise<SignInResponse> {
+    return signIn(credentials)
   }
 
-  async signUp(data: {
-    email: string
-    password: string
-    firstName?: string
-    lastName?: string
-  }): Promise<SignUpResponse> {
-    return postApiV1AuthSignUp(data)
+  async signUp(data: AuthSignUpBody): Promise<SignUpResponse> {
+    return signUp(data)
   }
 }

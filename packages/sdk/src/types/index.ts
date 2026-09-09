@@ -18,26 +18,6 @@ export type StorageProvider = {
   removeItem(key: string): void | Promise<void>
 }
 
-export type PasskeyOptions = {
-  challenge: string
-  rpId: string
-  userId: string
-  userName: string
-  userDisplayName?: string
-}
-
-export type PasskeyCredential = {
-  id: string
-  rawId: string
-  response: {
-    clientDataJSON: string
-    authenticatorData: string
-    signature: string
-    userHandle?: string
-  }
-  type: 'public-key'
-}
-
 export class BlindgateError extends Error {
   code: string
   statusCode?: number

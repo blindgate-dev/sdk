@@ -1,17 +1,20 @@
 import {
   configureHttpClient,
-  postApiV1AuthSignOut,
-  getApiV1AuthSession,
-  postApiV1AuthRefresh,
+  getSession,
+  refreshToken as refreshSessionToken,
+  signOut,
+  type AuthSignInBody,
+  type AuthSignUpBody,
   type AuthUser,
   type SignInResponse,
   type SignUpResponse,
-  type SignInSuccessResponse,
 } from '@blindgate/api'
 import type { BlindgateConfig } from './types'
 import { EmailAuth } from './auth/email'
 import { PasskeyAuth } from './auth/passkey'
-import { LocalStorageProvider, STORAGE_KEYS, isBrowser } from './utils'
+import { LocalStorageProvider, STORAGE_KEYS } from './utils'
+
+const DEFAULT_BASE_URL = 'https://api.blindgate.dev'
 
 export class Blindgate {
   private config: BlindgateConfig
@@ -24,15 +27,13 @@ export class Blindgate {
       throw new Error('Blindgate SDK requires a publishableKey')
     }
 
-    this.config = {
-      baseUrl: 'https://api.blindgate.dev',
-      ...config,
-    }
+    const baseUrl = config.baseUrl ?? DEFAULT_BASE_URL
+    this.config = { ...config, baseUrl }
 
     this.storage = config.storage ?? new LocalStorageProvider()
 
     configureHttpClient({
-      baseUrl: this.config.baseUrl!,
+      baseUrl,
       publishableKey: this.config.publishableKey,
       getToken: () => this.storage.getItem(STORAGE_KEYS.SESSION_TOKEN),
     })
@@ -42,39 +43,32 @@ export class Blindgate {
   }
 
   signIn = {
-    email: async (credentials: {
-      identifier: string
-      password: string
-    }): Promise<SignInResponse> => {
+    email: async (credentials: AuthSignInBody): Promise<SignInResponse> => {
       const result = await this.emailAuth.signIn(credentials)
       await this.persistSession(result)
       return result
     },
 
-    passkey: async (): Promise<SignInSuccessResponse> => {
-      const result = await this.passkeyAuth.signIn()
+    passkey: async (email: string): Promise<SignInResponse> => {
+      const result = await this.passkeyAuth.signIn(email)
       await this.persistSession(result)
       return result
     },
   }
 
   signUp = {
-    email: async (data: {
-      email: string
-      password: string
-      firstName?: string
-      lastName?: string
-    }): Promise<SignUpResponse> => {
+    email: async (data: AuthSignUpBody): Promise<SignUpResponse> => {
       const result = await this.emailAuth.signUp(data)
       await this.persistSession(result)
       return result
     },
+  }
 
-    passkey: async (name?: string): Promise<SignUpResponse> => {
-      const result = await this.passkeyAuth.signUp(name)
-      await this.persistSession(result)
-      return result
-    },
+  /** Manage passkeys for the signed-in user. */
+  passkeys = {
+    register: () => this.passkeyAuth.register(),
+    list: () => this.passkeyAuth.list(),
+    delete: (id: string) => this.passkeyAuth.delete(id),
   }
 
   async signOut(): Promise<void> {
@@ -82,7 +76,7 @@ export class Blindgate {
 
     if (token) {
       try {
-        await postApiV1AuthSignOut()
+        await signOut()
       } catch {
         // Ignore network errors during sign out
       }
@@ -99,9 +93,9 @@ export class Blindgate {
     }
 
     try {
-      const session = await getApiV1AuthSession()
+      const session = await getSession()
 
-      if ('user' in session && session.user) {
+      if (session.authenticated) {
         await this.storage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(session.user))
         return session.user
       }
@@ -121,7 +115,7 @@ export class Blindgate {
     }
 
     try {
-      const result = await postApiV1AuthRefresh({ refreshToken })
+      const result = await refreshSessionToken({ refreshToken })
       await this.storage.setItem(STORAGE_KEYS.SESSION_TOKEN, result.sessionToken)
       await this.storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, result.refreshToken)
       return true
@@ -131,9 +125,7 @@ export class Blindgate {
     }
   }
 
-  private async persistSession(
-    result: SignInResponse | SignUpResponse | SignInSuccessResponse,
-  ): Promise<void> {
+  private async persistSession(result: SignInResponse | SignUpResponse): Promise<void> {
     if ('sessionToken' in result) {
       await this.storage.setItem(STORAGE_KEYS.SESSION_TOKEN, result.sessionToken)
       await this.storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, result.refreshToken)

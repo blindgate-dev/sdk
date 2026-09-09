@@ -14,7 +14,7 @@
   "dependencies": {},
   "devDependencies": {
     "@blindgate/typescript-config": "workspace:*",
-    "orval": "8.1.0",
+    "orval": "8.30.0",
     "typescript": "catalog:",
     "bun-types": "catalog:"
   }

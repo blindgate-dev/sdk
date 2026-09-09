@@ -23,8 +23,8 @@ const result = await auth.signIn.email({
   password: 'secure-password',
 })
 
-// Or use passkeys
-const result = await auth.signIn.passkey()
+// Or use a passkey registered for that identifier
+const result = await auth.signIn.passkey('user@example.com')
 
 // Get current user
 const user = await auth.getUser()
@@ -88,22 +88,22 @@ const result = await auth.signIn.email({
 // Returns: SignInResponse (includes user, sessionToken, refreshToken)
 ```
 
-##### `signIn.passkey()`
+##### `signIn.passkey(email)`
 
-Sign in using WebAuthn/Passkey (browser only).
+Sign in using a WebAuthn passkey (browser only). The browser must support the WebAuthn JSON API (`PublicKeyCredential.parseRequestOptionsFromJSON`).
 
 ```typescript
-const result = await auth.signIn.passkey()
-// Returns: SignInSuccessResponse
+const result = await auth.signIn.passkey('user@example.com')
+// Returns: SignInResponse
 ```
 
 ##### `signUp.email(data)`
 
-Create a new account with email and password.
+Create a new account with an identifier (email, phone, or username) and password.
 
 ```typescript
 const result = await auth.signUp.email({
-  email: 'user@example.com',
+  identifier: 'user@example.com',
   password: 'password',
   firstName: 'John', // optional
   lastName: 'Doe',   // optional
@@ -111,13 +111,14 @@ const result = await auth.signUp.email({
 // Returns: SignUpResponse
 ```
 
-##### `signUp.passkey(name?)`
+##### `passkeys.register()` / `passkeys.list()` / `passkeys.delete(id)`
 
-Create a new account using WebAuthn/Passkey (browser only).
+Manage passkeys for the signed-in user (browser only for `register`).
 
 ```typescript
-const result = await auth.signUp.passkey('John Doe')
-// Returns: SignUpResponse
+const { passkey } = await auth.passkeys.register()
+const { passkeys } = await auth.passkeys.list()
+await auth.passkeys.delete(passkey.id)
 ```
 
 ##### `signOut()`
