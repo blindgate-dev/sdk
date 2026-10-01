@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@blindgate/typescript-config": "workspace:*",
-    "bun-types": "catalog:",
+    "@types/bun": "catalog:",
     "typescript": "catalog:"
   }
 }
