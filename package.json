@@ -25,6 +25,7 @@
     "typecheck": "turbo run typecheck",
     "format": "biome format --write .",
     "format:check": "biome format .",
+    "lint": "biome check .",
     "api:generate": "bun run --cwd internals/api generate",
     "clean": "turbo run clean && rm -rf node_modules bun.lock"
   },

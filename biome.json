@@ -32,5 +32,12 @@
       "!**/.astro",
       "!**/*.json"
     ]
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["internals/api/src/generated/**"],
+      "linter": { "enabled": false },
+      "assist": { "enabled": false }
+    }
+  ]
 }

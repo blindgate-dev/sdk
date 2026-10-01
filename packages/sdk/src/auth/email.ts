@@ -1,10 +1,10 @@
 import {
-  signIn,
-  signUp,
   type AuthSignInBody,
   type AuthSignUpBody,
   type SignInResponse,
   type SignUpResponse,
+  signIn,
+  signUp,
 } from '@blindgate/api'
 
 export class EmailAuth {

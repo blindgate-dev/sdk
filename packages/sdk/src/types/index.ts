@@ -1,9 +1,9 @@
 export type {
+  AuthSignInBody,
+  AuthSignUpBody,
   AuthUser,
   SignInResponse,
   SignUpResponse,
-  AuthSignInBody,
-  AuthSignUpBody,
 } from '@blindgate/api'
 
 export type BlindgateConfig = {

@@ -1,14 +1,14 @@
 import {
   deletePasskey,
+  type ListPasskeysResponse,
   listPasskeys,
+  type PasskeyRegisterBody,
+  type PasskeyRegistrationResponse,
+  type PasskeyVerifyBody,
   passkeyLoginChallenge,
   passkeyLoginVerify,
   passkeyRegisterChallenge,
   passkeyRegisterVerify,
-  type ListPasskeysResponse,
-  type PasskeyRegisterBody,
-  type PasskeyRegistrationResponse,
-  type PasskeyVerifyBody,
   type SignInResponse,
 } from '@blindgate/api'
 import { BlindgateError } from '../types'

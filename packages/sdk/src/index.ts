@@ -1,13 +1,7 @@
-export { Blindgate } from './blindgate'
-export {
-  BlindgateError,
-  type BlindgateConfig,
-  type StorageProvider,
-} from './types'
 export type {
-  AuthUser,
   AuthSignInBody,
   AuthSignUpBody,
+  AuthUser,
   ListPasskeysResponse,
   Passkey,
   PasskeyRegistrationResponse,
@@ -16,3 +10,9 @@ export type {
   SignInSuccessResponse,
   SignUpResponse,
 } from '@blindgate/api'
+export { Blindgate } from './blindgate'
+export {
+  type BlindgateConfig,
+  BlindgateError,
+  type StorageProvider,
+} from './types'

@@ -1,17 +1,17 @@
 import {
-  configureHttpClient,
-  getSession,
-  refreshToken as refreshSessionToken,
-  signOut,
   type AuthSignInBody,
   type AuthSignUpBody,
   type AuthUser,
+  configureHttpClient,
+  getSession,
+  refreshToken as refreshSessionToken,
   type SignInResponse,
   type SignUpResponse,
+  signOut,
 } from '@blindgate/api'
-import type { BlindgateConfig } from './types'
 import { EmailAuth } from './auth/email'
 import { PasskeyAuth } from './auth/passkey'
+import type { BlindgateConfig } from './types'
 import { LocalStorageProvider, STORAGE_KEYS } from './utils'
 
 const DEFAULT_BASE_URL = 'https://api.blindgate.dev'

@@ -1,9 +1,8 @@
 export {
-  httpClient,
   configureHttpClient,
   getHttpClientConfig,
   HttpClientError,
+  httpClient,
 } from './client/http-client'
-
-export * from './generated/model'
 export * from './generated'
+export * from './generated/model'
