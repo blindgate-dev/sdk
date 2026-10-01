@@ -55,3 +55,7 @@ bun run clean            # Clean all build artifacts and node_modules
 - `bunfig.toml` sets `bun = true` and `silent = true` for script running
 - SDK builds with `bun build --target browser`
 - Uses Bun workspace protocol (`workspace:*`) and catalogs (`catalog:`)
+
+## Turborepo
+
+Before changing `turbo.json` or turbo CLI usage, read the version-matched docs bundled with the installed package at `node_modules/turbo/docs/` (start with `README.md`) — turbo evolves faster than training data.

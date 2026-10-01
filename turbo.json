@@ -1,5 +1,6 @@
 {
   "$schema": "https://v2-11-6.turborepo.dev/schema.json",
+  "agentGuidance": false,
   "concurrency": "15",
   "globalDependencies": [".env"],
   "tasks": {
